@@ -77,4 +77,5 @@ class ThreeCommasFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             api_secret=api_secret,
             session=async_create_clientsession(self.hass),
         )
-        await client.async_get_accounts()
+        # Explicitly test the bot stats endpoint to validate credentials
+        await client.async_get_bot_stats()

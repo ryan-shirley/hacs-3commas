@@ -17,21 +17,19 @@ class ThreeCommasEntity(CoordinatorEntity[ThreeCommasDataUpdateCoordinator]):
     def __init__(
         self,
         coordinator: ThreeCommasDataUpdateCoordinator,
-        account_id: str,
     ) -> None:
         """Initialize entity."""
         super().__init__(coordinator)
-        self._account_id = account_id
-        self._attr_unique_id = f"{DOMAIN}_{account_id}"
+        self._attr_unique_id = f"{DOMAIN}"
 
         # Set up device info
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, account_id)},
-            name=f"3Commas Account {account_id}",
+            identifiers={(DOMAIN, "3commas_bot_stats")},
+            name="3Commas Bot Stats",
             manufacturer="3Commas",
         )
 
     @property
-    def account_data(self):
-        """Return account data."""
-        return self.coordinator.data.get(self._account_id, {})
+    def profit_data(self):
+        """Return profit data."""
+        return self.coordinator.data.get("profit_data", {})

@@ -12,4 +12,4 @@ CONF_API_KEY = "api_key"
 CONF_API_SECRET = "api_secret"
 
 # Integration specific constants
-BASE_URL = "https://api.3commas.io"
+BASE_URL = "https://api.3commas.io/public/api"
