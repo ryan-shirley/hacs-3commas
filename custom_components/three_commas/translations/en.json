@@ -2,20 +2,21 @@
     "config": {
         "step": {
             "user": {
-                "description": "If you need help with the configuration have a look here: https://github.com/ludeeus/integration_blueprint",
+                "title": "Connect to 3Commas",
+                "description": "Enter your 3Commas API credentials.",
                 "data": {
-                    "username": "Username",
-                    "password": "Password"
+                    "api_key": "API Key",
+                    "api_secret": "API Secret"
                 }
             }
         },
         "error": {
-            "auth": "Username/Password is wrong.",
-            "connection": "Unable to connect to the server.",
-            "unknown": "Unknown error occurred."
+            "auth": "Invalid API credentials",
+            "connection": "Failed to connect to 3Commas API",
+            "unknown": "Unexpected error occurred"
         },
         "abort": {
-            "already_configured": "This entry is already configured."
+            "already_configured": "3Commas integration is already configured"
         }
     }
 }

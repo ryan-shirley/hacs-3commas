@@ -1,32 +1,48 @@
-"""DataUpdateCoordinator for integration_blueprint."""
+"""DataUpdateCoordinator for three_commas."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from datetime import timedelta
+from logging import Logger
+from typing import Any
 
-from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .api import (
-    IntegrationBlueprintApiClientAuthenticationError,
-    IntegrationBlueprintApiClientError,
-)
-
-if TYPE_CHECKING:
-    from .data import IntegrationBlueprintConfigEntry
+from .api import ThreeCommasApiClient
+from .const import DOMAIN
 
 
-# https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
+class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching data from the API."""
 
-    config_entry: IntegrationBlueprintConfigEntry
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        logger: Logger,
+        client: ThreeCommasApiClient,
+        update_interval: timedelta,
+    ) -> None:
+        """Initialize."""
+        self.client = client
+        self.accounts = {}
 
-    async def _async_update_data(self) -> Any:
-        """Update data via library."""
-        try:
-            return await self.config_entry.runtime_data.client.async_get_data()
-        except IntegrationBlueprintApiClientAuthenticationError as exception:
-            raise ConfigEntryAuthFailed(exception) from exception
-        except IntegrationBlueprintApiClientError as exception:
-            raise UpdateFailed(exception) from exception
+        super().__init__(
+            hass=hass,
+            logger=logger,
+            name=DOMAIN,
+            update_interval=update_interval,
+        )
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Update data via API."""
+        self.accounts = await self.client.async_get_accounts()
+        data = {}
+
+        for account in self.accounts:
+            account_id = account.get("id")
+            if account_id:
+                account_info = await self.client.async_get_account_info(str(account_id))
+                data[str(account_id)] = account_info
+
+        return data

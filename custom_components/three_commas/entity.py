@@ -1,28 +1,37 @@
-"""BlueprintEntity class."""
+"""Base entity class for 3Commas integration."""
 
 from __future__ import annotations
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION
-from .coordinator import BlueprintDataUpdateCoordinator
+from .const import ATTRIBUTION, DOMAIN
+from .coordinator import ThreeCommasDataUpdateCoordinator
 
 
-class IntegrationBlueprintEntity(CoordinatorEntity[BlueprintDataUpdateCoordinator]):
-    """BlueprintEntity class."""
+class ThreeCommasEntity(CoordinatorEntity[ThreeCommasDataUpdateCoordinator]):
+    """Base entity for 3Commas integration."""
 
     _attr_attribution = ATTRIBUTION
 
-    def __init__(self, coordinator: BlueprintDataUpdateCoordinator) -> None:
-        """Initialize."""
+    def __init__(
+        self,
+        coordinator: ThreeCommasDataUpdateCoordinator,
+        account_id: str,
+    ) -> None:
+        """Initialize entity."""
         super().__init__(coordinator)
-        self._attr_unique_id = coordinator.config_entry.entry_id
+        self._account_id = account_id
+        self._attr_unique_id = f"{DOMAIN}_{account_id}"
+
+        # Set up device info
         self._attr_device_info = DeviceInfo(
-            identifiers={
-                (
-                    coordinator.config_entry.domain,
-                    coordinator.config_entry.entry_id,
-                ),
-            },
+            identifiers={(DOMAIN, account_id)},
+            name=f"3Commas Account {account_id}",
+            manufacturer="3Commas",
         )
+
+    @property
+    def account_data(self):
+        """Return account data."""
+        return self.coordinator.data.get(self._account_id, {})
