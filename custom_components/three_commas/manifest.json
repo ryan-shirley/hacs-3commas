@@ -1,6 +1,6 @@
 {
-  "domain": "integration_blueprint",
-  "name": "Integration blueprint",
+  "domain": "three_commas",
+  "name": "3Commas",
   "codeowners": [
     "@ludeeus"
   ],
