@@ -1,6 +1,5 @@
 {
     "name": "3Commas",
     "homeassistant": "2023.4.0",
-    "hacs": "2.0.1",
-    "render_readme": true
+    "hacs": "2.0.1"
 }
