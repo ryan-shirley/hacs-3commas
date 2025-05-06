@@ -19,9 +19,6 @@ This Home Assistant integration allows you to view your 3Commas bot statistics d
 - Option to select between Paper and Real trading modes
 
 ## Screenshots
-
-_Place screenshots of your integration here. For example:_
-
 ![Example Dashboard](https://github.com/ryan-shirley/hacs-3commas/raw/main/images/dashboard.png)
 
 ## Installation
