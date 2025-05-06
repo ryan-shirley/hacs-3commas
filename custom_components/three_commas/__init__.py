@@ -24,6 +24,7 @@ from .const import (
     CONF_USER_MODE,
     DOMAIN,
     LOGGER,
+    UPDATE_INTERVAL,
 )
 from .coordinator import ThreeCommasDataUpdateCoordinator
 
@@ -66,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass=hass,
         client=api_client,
         logger=LOGGER,
-        update_interval=timedelta(minutes=5),
+        update_interval=timedelta(minutes=UPDATE_INTERVAL),
         config_entry=entry,
     )
 

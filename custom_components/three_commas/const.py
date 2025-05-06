@@ -20,3 +20,6 @@ USER_MODE_REAL = "real"
 
 # Integration specific constants
 BASE_URL = "https://api.3commas.io/public/api"
+
+# Update interval in minutes
+UPDATE_INTERVAL = 60  # 1 hour
