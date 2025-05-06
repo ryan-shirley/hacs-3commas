@@ -2,11 +2,14 @@
   "domain": "three_commas",
   "name": "3Commas",
   "codeowners": [
-    "@ludeeus"
+    "@ryan-shirley"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/ludeeus/integration_blueprint",
+  "documentation": "https://github.com/ryan-shirley/hacs-3commas",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/ludeeus/integration_blueprint/issues",
-  "version": "0.1.0"
+  "issue_tracker": "https://github.com/ryan-shirley/hacs-3commas/issues",
+  "version": "0.1.0",
+  "requirements": [
+    "cryptography>=38.0.0"
+  ]
 }

@@ -1,46 +1,101 @@
-# Notice
+# 3Commas for Home Assistant
 
-The component and platforms in this repository are not meant to be used by a
-user, but as a "blueprint" that custom component developers can build
-upon, to make more awesome stuff.
+[![GitHub Release][releases-shield]][releases]
+[![GitHub Activity][commits-shield]][commits]
+[![License][license-shield]](LICENSE)
 
-HAVE FUN! 😎
+[![hacs][hacsbadge]][hacs]
+[![Project Maintenance][maintenance-shield]][user_profile]
 
-## Why?
+This Home Assistant integration allows you to view your 3Commas bot statistics directly in your Home Assistant dashboard. Monitor your trading profits, active deals, and locked funds all in one place.
 
-This is simple, by having custom_components look (README + structure) the same
-it is easier for developers to help each other and for users to start using them.
+## Features
 
-If you are a developer and you want to add things to this "blueprint" that you think more
-developers will have use for, please open a PR to add it :)
+- View overall USD profit from your 3Commas bots
+- Track today's USD profit
+- Monitor active deals USD profit
+- See funds locked in active deals
+- Support for both HMAC and RSA authentication methods
+- Option to select between Paper and Real trading modes
 
-## What?
+## Screenshots
 
-This repository contains multiple files, here is a overview:
+_Place screenshots of your integration here. For example:_
 
-File | Purpose | Documentation
--- | -- | --
-`.devcontainer.json` | Used for development/testing with Visual Studio Code. | [Documentation](https://code.visualstudio.com/docs/remote/containers)
-`.github/ISSUE_TEMPLATE/*.yml` | Templates for the issue tracker | [Documentation](https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository)
-`custom_components/integration_blueprint/*` | Integration files, this is where everything happens. | [Documentation](https://developers.home-assistant.io/docs/creating_component_index)
-`CONTRIBUTING.md` | Guidelines on how to contribute. | [Documentation](https://help.github.com/en/github/building-a-strong-community/setting-guidelines-for-repository-contributors)
-`LICENSE` | The license file for the project. | [Documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository)
-`README.md` | The file you are reading now, should contain info about the integration, installation and configuration instructions. | [Documentation](https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax)
-`requirements.txt` | Python packages used for development/lint/testing this integration. | [Documentation](https://pip.pypa.io/en/stable/user_guide/#requirements-files)
+![Example Dashboard](https://github.com/ryan-shirley/hacs-3commas/raw/main/images/dashboard.png)
 
-## How?
+## Installation
 
-1. Create a new repository in GitHub, using this repository as a template by clicking the "Use this template" button in the GitHub UI.
-1. Open your new repository in Visual Studio Code devcontainer (Preferably with the "`Dev Containers: Clone Repository in Named Container Volume...`" option).
-1. Rename all instances of the `integration_blueprint` to `custom_components/<your_integration_domain>` (e.g. `custom_components/awesome_integration`).
-1. Rename all instances of the `Integration Blueprint` to `<Your Integration Name>` (e.g. `Awesome Integration`).
-1. Run the `scripts/develop` to start HA and test out your new integration.
+### HACS (Recommended)
 
-## Next steps
+1. Ensure that [HACS](https://hacs.xyz/) is installed.
+2. Search for "3Commas" in the HACS Integrations tab.
+3. Click Install.
+4. Restart Home Assistant.
+5. Go to **Settings** → **Devices & Services** and click **+ Add Integration**.
+6. Search for "3Commas" and follow the setup instructions.
 
-These are some next steps you may want to look into:
-- Add tests to your integration, [`pytest-homeassistant-custom-component`](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component) can help you get started.
-- Add brand images (logo/icon) to https://github.com/home-assistant/brands.
-- Create your first release.
-- Share your integration on the [Home Assistant Forum](https://community.home-assistant.io/).
-- Submit your integration to [HACS](https://hacs.xyz/docs/publish/start).
+### Manual Installation
+
+1. Copy the `custom_components/three_commas` directory from this repository to your Home Assistant `custom_components` directory.
+2. Restart Home Assistant.
+3. Go to **Settings** → **Devices & Services** and click **+ Add Integration**.
+4. Search for "3Commas" and follow the setup instructions.
+
+## Configuration
+
+The integration can be configured via the Home Assistant UI:
+
+1. Go to **Settings** → **Devices & Services** and click **+ Add Integration**.
+2. Search for "3Commas" and select it.
+3. Choose your authentication method:
+   - **HMAC Authentication**: Requires API key and API secret
+   - **RSA Authentication**: Requires API key and private key (PEM format)
+4. Select your trading mode:
+   - **Paper Trading**: For using 3Commas in paper trading mode
+   - **Real Trading**: For live trading with real funds
+
+## API Keys and Authentication
+
+To use this integration, you'll need to create API keys from your 3Commas account:
+
+1. Log in to your [3Commas account](https://3commas.io/)
+2. Go to **API** in your profile settings
+3. Create a new API key with "Read" permission
+4. For HMAC authentication:
+   - Save both the API key and Secret
+5. For RSA authentication:
+   - Generate an RSA key pair
+   - Upload your public key to 3Commas
+   - Keep your private key secure for use with this integration
+
+## Troubleshooting
+
+If you encounter issues with the integration:
+
+1. Verify your API credentials are correct and have proper permissions
+2. Check that your network allows connections to the 3Commas API
+3. For RSA authentication issues, ensure your private key is in the correct PEM format
+4. Enable debug logging for more information:
+   ```yaml
+   logger:
+     default: info
+     logs:
+       custom_components.three_commas: debug
+   ```
+
+## Contributing
+
+If you'd like to contribute to this project, please read the [Contributing Guidelines](CONTRIBUTING.md).
+
+---
+
+[commits-shield]: https://img.shields.io/github/commit-activity/y/ryan-shirley/hacs-3commas.svg
+[commits]: https://github.com/ryan-shirley/hacs-3commas/commits/main
+[hacs]: https://github.com/hacs/integration
+[hacsbadge]: https://img.shields.io/badge/HACS-Default-orange.svg
+[license-shield]: https://img.shields.io/github/license/ryan-shirley/hacs-3commas.svg
+[maintenance-shield]: https://img.shields.io/badge/maintainer-%40ryan--shirley-blue.svg
+[releases-shield]: https://img.shields.io/github/release/ryan-shirley/hacs-3commas.svg
+[releases]: https://github.com/ryan-shirley/hacs-3commas/releases
+[user_profile]: https://github.com/ryan-shirley
