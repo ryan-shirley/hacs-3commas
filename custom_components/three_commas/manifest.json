@@ -8,8 +8,8 @@
   "documentation": "https://github.com/ryan-shirley/hacs-3commas",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/ryan-shirley/hacs-3commas/issues",
-  "version": "1.0.0",
   "requirements": [
     "cryptography>=38.0.0"
-  ]
+  ],
+  "version": "1.0.0"
 }
