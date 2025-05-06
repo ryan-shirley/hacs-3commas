@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import socket
@@ -11,7 +12,18 @@ from typing import Any
 import aiohttp
 import async_timeout
 
-from .const import BASE_URL, LOGGER
+try:
+    # Python >= 3.6
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+    HAS_CRYPTOGRAPHY = True
+except ImportError:
+    HAS_CRYPTOGRAPHY = False
+
+from .const import AUTH_METHOD_HMAC, AUTH_METHOD_RSA, BASE_URL, LOGGER
 
 
 class ThreeCommasApiClientError(Exception):
@@ -50,13 +62,41 @@ class ThreeCommasApiClient:
     def __init__(
         self,
         api_key: str,
-        api_secret: str,
-        session: aiohttp.ClientSession,
+        auth_method: str,
+        api_secret: str | None = None,
+        private_key: str | None = None,
+        user_mode: str | None = None,
+        session: aiohttp.ClientSession | None = None,
     ) -> None:
-        """Initialize 3Commas API Client."""
+        """Initialize 3Commas API Client.
+
+        Args:
+            api_key: The 3commas API key
+            auth_method: The authentication method to use (hmac or rsa)
+            api_secret: The API secret (for HMAC authentication)
+            private_key: The private key in PEM format (for RSA authentication)
+            user_mode: The mode to use (paper or real)
+            session: The aiohttp session to use
+        """
         self._api_key = api_key
+        self._auth_method = auth_method
         self._api_secret = api_secret
+        self._private_key = private_key
+        self._user_mode = user_mode
         self._session = session
+
+        # Validate required authentication parameters
+        if auth_method == AUTH_METHOD_HMAC and not api_secret:
+            raise ValueError("API secret is required for HMAC authentication")
+        if auth_method == AUTH_METHOD_RSA and not private_key:
+            raise ValueError("Private key is required for RSA authentication")
+
+        # Validate RSA dependencies
+        if auth_method == AUTH_METHOD_RSA and not HAS_CRYPTOGRAPHY:
+            raise ImportError(
+                "The cryptography package is required for RSA authentication. "
+                "Please install it with `pip install cryptography`."
+            )
 
     async def async_get_bot_stats(
         self, account_id: str | None = None, bot_id: str | None = None
@@ -76,14 +116,14 @@ class ThreeCommasApiClient:
             params=params,
         )
 
-    def _generate_signature(self, request_path: str) -> dict:
-        """Generate signature for API request.
+    def _generate_hmac_signature(self, request_path: str) -> dict:
+        """Generate HMAC signature for API request.
 
         Implements 3commas signature requirements:
         https://developers.3commas.io/quick-start/signing-a-request-using-hmac-sha256
         """
         # Log the input parameters for debugging
-        LOGGER.debug("Generating signature for path: %s", request_path)
+        LOGGER.debug("Generating HMAC signature for path: %s", request_path)
 
         # Create signature using HMAC-SHA256
         # The path should be the full path including query params
@@ -96,8 +136,61 @@ class ThreeCommasApiClient:
             "Signature": signature,
         }
 
-        LOGGER.debug("Generated headers: %s", headers)
+        LOGGER.debug("Generated HMAC headers: %s", headers)
         return headers
+
+    def _generate_rsa_signature(self, request_path: str) -> dict:
+        """Generate RSA signature for API request.
+
+        Implements 3commas signature requirements:
+        https://developers.3commas.io/quick-start/signing-a-request-using-rsa
+        """
+        # Log the input parameters for debugging
+        LOGGER.debug("Generating RSA signature for path: %s", request_path)
+
+        try:
+            if not self._private_key:
+                raise ValueError("Private key is required for RSA authentication")
+
+            # Load the private key
+            private_key_obj = load_pem_private_key(
+                self._private_key.encode("utf-8"),
+                password=None,
+                backend=default_backend(),
+            )
+
+            # Sign the request path using the private key
+            signature_bytes = private_key_obj.sign(
+                request_path.encode("utf-8"),
+                padding.PKCS1v15(),
+                hashes.SHA256(),
+            )
+
+            # Convert the signature to base64
+            signature = base64.b64encode(signature_bytes).decode("utf-8")
+
+            headers = {
+                "APIKEY": self._api_key,
+                "Signature": signature,
+            }
+
+            LOGGER.debug(
+                "Generated RSA headers with signature length: %d", len(signature)
+            )
+            return headers
+
+        except Exception as e:
+            LOGGER.error("Error generating RSA signature: %s", e)
+            raise ThreeCommasApiClientAuthenticationError(
+                f"Error generating RSA signature: {e}"
+            ) from e
+
+    def _generate_signature(self, request_path: str) -> dict:
+        """Generate signature for API request based on authentication method."""
+        if self._auth_method == AUTH_METHOD_RSA:
+            return self._generate_rsa_signature(request_path)
+        # Default to HMAC
+        return self._generate_hmac_signature(request_path)
 
     async def _api_wrapper(
         self,
@@ -124,6 +217,11 @@ class ThreeCommasApiClient:
         signature_path = f"/public/api{endpoint}{query_string}"
         LOGGER.debug("Signature path: %s", signature_path)
         headers = self._generate_signature(signature_path)
+
+        # Add Forced-Mode header if user_mode is specified
+        if self._user_mode:
+            headers["Forced-Mode"] = self._user_mode
+            LOGGER.debug("Added Forced-Mode header: %s", self._user_mode)
 
         if additional_headers:
             headers.update(additional_headers)

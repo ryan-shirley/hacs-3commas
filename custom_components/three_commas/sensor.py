@@ -85,7 +85,8 @@ class ThreeCommasSensor(ThreeCommasEntity, SensorEntity):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.entity_description = entity_description
-        self._attr_unique_id = f"{DOMAIN}_{entity_description.key}"
+        entry_id = coordinator.config_entry.entry_id if coordinator.config_entry else ""
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{entity_description.key}"
         self._attr_name = f"3Commas {entity_description.name}"
 
     @property

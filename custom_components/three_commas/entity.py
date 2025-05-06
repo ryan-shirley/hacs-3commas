@@ -20,11 +20,12 @@ class ThreeCommasEntity(CoordinatorEntity[ThreeCommasDataUpdateCoordinator]):
     ) -> None:
         """Initialize entity."""
         super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}"
+        entry_id = coordinator.config_entry.entry_id if coordinator.config_entry else ""
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}"
 
         # Set up device info
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, "3commas_bot_stats")},
+            identifiers={(DOMAIN, f"3commas_bot_stats_{entry_id}")},
             name="3Commas Bot Stats",
             manufacturer="3Commas",
         )

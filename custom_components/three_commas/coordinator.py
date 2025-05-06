@@ -28,9 +28,11 @@ class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         logger: Logger,
         client: ThreeCommasApiClient,
         update_interval: timedelta,
+        config_entry=None,
     ) -> None:
         """Initialize."""
         self.client = client
+        self.config_entry = config_entry
 
         super().__init__(
             hass=hass,

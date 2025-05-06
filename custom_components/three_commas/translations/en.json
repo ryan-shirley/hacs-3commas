@@ -2,18 +2,37 @@
     "config": {
         "step": {
             "user": {
-                "title": "Connect to 3Commas",
-                "description": "Enter your 3Commas API credentials.",
+                "title": "Select authentication method",
+                "description": "Choose the authentication method for your 3Commas API integration",
+                "data": {
+                    "auth_method": "Authentication Method"
+                }
+            },
+            "hmac": {
+                "title": "HMAC Authentication",
+                "description": "Enter your 3Commas API credentials and trading mode",
                 "data": {
                     "api_key": "API Key",
-                    "api_secret": "API Secret"
+                    "api_secret": "API Secret",
+                    "user_mode": "Trading Mode"
+                }
+            },
+            "rsa": {
+                "title": "RSA Authentication",
+                "description": "Enter your 3Commas API key and private key in PEM format, and select your trading mode",
+                "data": {
+                    "api_key": "API Key",
+                    "private_key": "Private Key (PEM format)",
+                    "user_mode": "Trading Mode"
                 }
             }
         },
         "error": {
-            "auth": "Invalid API credentials",
-            "connection": "Failed to connect to 3Commas API",
-            "unknown": "Unexpected error occurred"
+            "auth": "Invalid credentials. Please check your API key and secret/private key.",
+            "connection": "Unable to connect to 3Commas API. Please check your internet connection and try again.",
+            "unknown": "An unknown error occurred. Please try again.",
+            "invalid_auth_method": "Invalid authentication method selected.",
+            "missing_dependency": "Required dependencies are missing. Please install the cryptography package."
         },
         "abort": {
             "already_configured": "3Commas integration is already configured"

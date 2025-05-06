@@ -14,7 +14,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import ThreeCommasApiClient
-from .const import CONF_API_KEY, CONF_API_SECRET, DOMAIN, LOGGER
+from .const import (
+    AUTH_METHOD_HMAC,
+    AUTH_METHOD_RSA,
+    CONF_API_KEY,
+    CONF_API_SECRET,
+    CONF_AUTH_METHOD,
+    CONF_PRIVATE_KEY,
+    CONF_USER_MODE,
+    DOMAIN,
+    LOGGER,
+)
 from .coordinator import ThreeCommasDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -24,26 +34,46 @@ PLATFORMS: list[Platform] = [
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up 3Commas from a config entry."""
-    # Store an instance of the API client
-    client = ThreeCommasApiClient(
-        api_key=entry.data[CONF_API_KEY],
-        api_secret=entry.data[CONF_API_SECRET],
-        session=async_get_clientsession(hass),
-    )
+    hass.data.setdefault(DOMAIN, {})
 
-    # Create a coordinator for data updates
+    # Extract configuration data
+    api_key = entry.data[CONF_API_KEY]
+    auth_method = entry.data.get(CONF_AUTH_METHOD, AUTH_METHOD_HMAC)
+    api_secret = entry.data.get(CONF_API_SECRET)
+    private_key = entry.data.get(CONF_PRIVATE_KEY)
+    user_mode = entry.data.get(CONF_USER_MODE)
+
+    # Create API client based on authentication method
+    if auth_method == AUTH_METHOD_RSA:
+        api_client = ThreeCommasApiClient(
+            api_key=api_key,
+            auth_method=AUTH_METHOD_RSA,
+            private_key=private_key,
+            user_mode=user_mode,
+            session=async_get_clientsession(hass),
+        )
+    else:
+        # Default to HMAC authentication
+        api_client = ThreeCommasApiClient(
+            api_key=api_key,
+            auth_method=AUTH_METHOD_HMAC,
+            api_secret=api_secret,
+            user_mode=user_mode,
+            session=async_get_clientsession(hass),
+        )
+
     coordinator = ThreeCommasDataUpdateCoordinator(
         hass=hass,
+        client=api_client,
         logger=LOGGER,
-        client=client,
         update_interval=timedelta(minutes=5),
+        config_entry=entry,
     )
 
     # Fetch initial data
     await coordinator.async_config_entry_first_refresh()
 
     # Store the coordinator for this entry
-    hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     # Set up all platforms for this device/entry
@@ -54,7 +84,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Handle removal of an entry."""
+    """Unload a config entry."""
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
     return unloaded
