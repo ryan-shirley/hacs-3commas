@@ -239,6 +239,10 @@ class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                     utilization_percentage = (
                                         total_account_investment / account_balance
                                     ) * 100
+                                    # Round to two decimal places
+                                    utilization_percentage = round(
+                                        utilization_percentage, 2
+                                    )
 
                                 # Log comprehensive account information
                                 LOGGER.info(

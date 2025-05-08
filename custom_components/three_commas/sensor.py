@@ -236,7 +236,8 @@ class ThreeCommasAccountUtilizationSensor(ThreeCommasEntity, SensorEntity):
             return None
 
         try:
-            return float(value)
+            # Convert to float and ensure it's rounded to 2 decimal places
+            return round(float(value), 2)
         except (ValueError, TypeError):
             LOGGER.error("Unable to convert utilization percentage %s to float", value)
             return None
