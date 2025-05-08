@@ -147,7 +147,7 @@ class ThreeCommasAccountBalanceSensor(ThreeCommasEntity, SensorEntity):
         account_name = account_data.get("name", "Unknown")
         exchange_name = account_data.get("exchange_name", "Unknown Exchange")
         self._attr_unique_id = f"{DOMAIN}_{entry_id}_account_{account_id}_balance"
-        self._attr_name = f"3Commas {exchange_name} - {account_name} Balance"
+        self._attr_name = f"{account_name} Balance ({exchange_name} 3Commas)"
 
         # Set entity properties
         self._attr_icon = "mdi:currency-usd"
@@ -206,7 +206,7 @@ class ThreeCommasAccountUtilizationSensor(ThreeCommasEntity, SensorEntity):
         account_name = account_data.get("name", "Unknown")
         exchange_name = account_data.get("exchange_name", "Unknown Exchange")
         self._attr_unique_id = f"{DOMAIN}_{entry_id}_account_{account_id}_utilization"
-        self._attr_name = f"3Commas {exchange_name} - {account_name} Utilization"
+        self._attr_name = f"{account_name} Utilisation ({exchange_name} 3Commas)"
 
         # Set entity properties
         self._attr_icon = "mdi:percent"
