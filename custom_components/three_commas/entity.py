@@ -39,3 +39,8 @@ class ThreeCommasEntity(CoordinatorEntity[ThreeCommasDataUpdateCoordinator]):
     def accounts_data(self):
         """Return accounts data."""
         return self.coordinator.data.get("accounts", {})
+
+    @property
+    def bots_data(self):
+        """Return bots data."""
+        return self.coordinator.data.get("bots", {})

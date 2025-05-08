@@ -72,11 +72,21 @@ async def async_setup_entry(
             )
         )
 
-    # Add sensors for account balances
+    # Add sensors for account balances and utilization
     accounts = coordinator.data.get("accounts", {})
     for account_id, account_data in accounts.items():
+        # Add balance sensor
         sensors.append(
             ThreeCommasAccountBalanceSensor(
+                coordinator=coordinator,
+                account_id=account_id,
+                account_data=account_data,
+            )
+        )
+
+        # Add utilization sensor
+        sensors.append(
+            ThreeCommasAccountUtilizationSensor(
                 coordinator=coordinator,
                 account_id=account_id,
                 account_data=account_data,
@@ -174,4 +184,59 @@ class ThreeCommasAccountBalanceSensor(ThreeCommasEntity, SensorEntity):
             return float(str(value))
         except (ValueError, TypeError):
             LOGGER.error("Unable to convert account balance %s to float", value)
+            return None
+
+
+class ThreeCommasAccountUtilizationSensor(ThreeCommasEntity, SensorEntity):
+    """3Commas account utilization percentage sensor entity."""
+
+    def __init__(
+        self,
+        coordinator: ThreeCommasDataUpdateCoordinator,
+        account_id: str,
+        account_data: dict,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.account_id = account_id
+        self.account_data = account_data
+        entry_id = coordinator.config_entry.entry_id if coordinator.config_entry else ""
+
+        # Set unique ID and name
+        account_name = account_data.get("name", "Unknown")
+        exchange_name = account_data.get("exchange_name", "Unknown Exchange")
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_account_{account_id}_utilization"
+        self._attr_name = f"3Commas {exchange_name} - {account_name} Utilization"
+
+        # Set entity properties
+        self._attr_icon = "mdi:percent"
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+        # Set up device info for this specific account (same device as balance sensor)
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"3commas_account_{account_id}")},
+            name=f"3Commas {exchange_name} - {account_name}",
+            manufacturer="3Commas",
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the sensor value."""
+        # Get the latest account data
+        account_data = self.accounts_data.get(self.account_id, {})
+
+        # If no data is available, return None
+        if not account_data:
+            return None
+
+        # Return the utilization percentage
+        value = account_data.get("utilization_percentage")
+        if value is None:
+            return None
+
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            LOGGER.error("Unable to convert utilization percentage %s to float", value)
             return None

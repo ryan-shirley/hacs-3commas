@@ -125,6 +125,35 @@ class ThreeCommasApiClient:
             endpoint=endpoint,
         )
 
+    async def async_get_bots(
+        self,
+        account_id: str | None = None,
+        strategy: str | None = None,
+        scope: str = "enabled",
+    ) -> Any:
+        """Get list of DCA bots from the API.
+
+        Args:
+            account_id: Filter bots by account ID
+            strategy: Filter bots by strategy type (long or short)
+            scope: Filter bots by scope (enabled, disabled)
+        """
+        endpoint = "/ver1/bots"
+        params = {}
+
+        if account_id:
+            params["account_id"] = account_id
+        if strategy:
+            params["strategy"] = strategy
+        if scope:
+            params["scope"] = scope
+
+        return await self._api_wrapper(
+            method="get",
+            endpoint=endpoint,
+            params=params,
+        )
+
     def _generate_hmac_signature(self, request_path: str) -> dict:
         """Generate HMAC signature for API request.
 
@@ -237,13 +266,13 @@ class ThreeCommasApiClient:
 
         try:
             # Log request details for debugging
-            LOGGER.debug(
-                "Making API request: %s %s, headers: %s, params: %s",
-                method,
-                url,
-                headers,
-                params,
-            )
+            # LOGGER.debug(
+            #     "Making API request: %s %s, headers: %s, params: %s",
+            #     method,
+            #     url,
+            #     headers,
+            #     params,
+            # )
 
             async with async_timeout.timeout(10):
                 response = await self._session.request(
