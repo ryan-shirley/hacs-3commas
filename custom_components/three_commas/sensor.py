@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CURRENCY_DOLLAR
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN, LOGGER
 from .coordinator import ThreeCommasDataUpdateCoordinator
@@ -71,6 +72,17 @@ async def async_setup_entry(
             )
         )
 
+    # Add sensors for account balances
+    accounts = coordinator.data.get("accounts", {})
+    for account_id, account_data in accounts.items():
+        sensors.append(
+            ThreeCommasAccountBalanceSensor(
+                coordinator=coordinator,
+                account_id=account_id,
+                account_data=account_data,
+            )
+        )
+
     async_add_entities(sensors)
 
 
@@ -103,4 +115,63 @@ class ThreeCommasSensor(ThreeCommasEntity, SensorEntity):
             return float(cast(str, value))
         except (ValueError, TypeError):
             LOGGER.error("Unable to convert %s to float", value)
+            return None
+
+
+class ThreeCommasAccountBalanceSensor(ThreeCommasEntity, SensorEntity):
+    """3Commas account balance sensor entity."""
+
+    def __init__(
+        self,
+        coordinator: ThreeCommasDataUpdateCoordinator,
+        account_id: str,
+        account_data: dict,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.account_id = account_id
+        self.account_data = account_data
+        entry_id = coordinator.config_entry.entry_id if coordinator.config_entry else ""
+
+        # Set unique ID and name
+        account_name = account_data.get("name", "Unknown")
+        exchange_name = account_data.get("exchange_name", "Unknown Exchange")
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_account_{account_id}_balance"
+        self._attr_name = f"3Commas {exchange_name} - {account_name} Balance"
+
+        # Set entity properties
+        self._attr_icon = "mdi:currency-usd"
+        self._attr_native_unit_of_measurement = CURRENCY_DOLLAR
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+        # Set up device info for this specific account
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"3commas_account_{account_id}")},
+            name=f"3Commas {exchange_name} - {account_name}",
+            manufacturer="3Commas",
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the sensor value."""
+        # Get the latest account data
+        account_data = self.accounts_data.get(self.account_id, {})
+
+        # If no data is available, return None
+        if not account_data:
+            return None
+
+        # Extract the USD amount
+        value = account_data.get("usd_amount")
+        if value is None:
+            return None
+
+        try:
+            # If the value is a string or complex object, convert it
+            if isinstance(value, dict) and "amount" in value:
+                return float(str(value["amount"]))
+            return float(str(value))
+        except (ValueError, TypeError):
+            LOGGER.error("Unable to convert account balance %s to float", value)
             return None

@@ -44,6 +44,8 @@ class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data via API."""
         try:
+            data = {}
+
             # Fetch bot stats data
             bot_stats = await self.client.async_get_bot_stats()
 
@@ -56,11 +58,10 @@ class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     "Missing expected data structure in bot stats response: %s",
                     bot_stats,
                 )
-                return {"profit_data": {}}
-
-            # Create a simplified data structure with just the profit values
-            data = {
-                "profit_data": {
+                data["profit_data"] = {}
+            else:
+                # Create a simplified data structure with just the profit values
+                data["profit_data"] = {
                     "overall_usd_profit": bot_stats.get("profits_in_usd", {}).get(
                         "overall_usd_profit"
                     ),
@@ -74,7 +75,28 @@ class ThreeCommasDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         "profits_in_usd", {}
                     ).get("funds_locked_in_active_deals"),
                 }
-            }
+
+            # Fetch accounts data
+            accounts = await self.client.async_get_accounts()
+
+            # Log the full response for debugging
+            LOGGER.debug("Accounts data: %s", accounts)
+
+            # Process accounts data
+            if accounts:
+                data["accounts"] = {}
+                for account in accounts:
+                    account_id = account.get("id")
+                    if account_id:
+                        data["accounts"][account_id] = {
+                            "id": account_id,
+                            "name": account.get("name", "Unknown Account"),
+                            "exchange_name": account.get(
+                                "exchange_name", "Unknown Exchange"
+                            ),
+                            "usd_amount": account.get("usd_amount", 0),
+                            "market_code": account.get("market_code", "unknown"),
+                        }
 
             return data
 

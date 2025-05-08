@@ -116,6 +116,15 @@ class ThreeCommasApiClient:
             params=params,
         )
 
+    async def async_get_accounts(self) -> Any:
+        """Get list of connected exchanges and wallets from the API."""
+        endpoint = "/ver1/accounts"
+
+        return await self._api_wrapper(
+            method="get",
+            endpoint=endpoint,
+        )
+
     def _generate_hmac_signature(self, request_path: str) -> dict:
         """Generate HMAC signature for API request.
 
