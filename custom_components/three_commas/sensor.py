@@ -27,7 +27,7 @@ ENTITY_DESCRIPTIONS = (
         icon="mdi:currency-usd",
         native_unit_of_measurement=CURRENCY_DOLLAR,
         device_class=SensorDeviceClass.MONETARY,
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=SensorStateClass.TOTAL,
     ),
     SensorEntityDescription(
         key="today_usd_profit",
@@ -35,7 +35,7 @@ ENTITY_DESCRIPTIONS = (
         icon="mdi:currency-usd",
         native_unit_of_measurement=CURRENCY_DOLLAR,
         device_class=SensorDeviceClass.MONETARY,
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=SensorStateClass.TOTAL,
     ),
     SensorEntityDescription(
         key="active_deals_usd_profit",
@@ -43,7 +43,7 @@ ENTITY_DESCRIPTIONS = (
         icon="mdi:currency-usd",
         native_unit_of_measurement=CURRENCY_DOLLAR,
         device_class=SensorDeviceClass.MONETARY,
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=SensorStateClass.TOTAL,
     ),
     SensorEntityDescription(
         key="funds_locked_in_active_deals",
@@ -51,7 +51,7 @@ ENTITY_DESCRIPTIONS = (
         icon="mdi:currency-usd-off",
         native_unit_of_measurement=CURRENCY_DOLLAR,
         device_class=SensorDeviceClass.MONETARY,
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=SensorStateClass.TOTAL,
     ),
 )
 
@@ -153,7 +153,7 @@ class ThreeCommasAccountBalanceSensor(ThreeCommasEntity, SensorEntity):
         self._attr_icon = "mdi:currency-usd"
         self._attr_native_unit_of_measurement = CURRENCY_DOLLAR
         self._attr_device_class = SensorDeviceClass.MONETARY
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_state_class = SensorStateClass.TOTAL
 
         # Set up device info for this specific account
         self._attr_device_info = DeviceInfo(
